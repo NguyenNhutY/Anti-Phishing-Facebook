@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Login</title>
+</head>
+<body>
+
+    <label>Nhập URL đăng nhập:</label>
+    <input type="text" id="loginUrl" placeholder="https://example.com/login">
+    <br><br>
+
+    <a href="#" id="startLogin">Bấm vào đây để bắt đầu đăng nhập</a>
+
+    <script>
+        function getRandomEmail() {
+            let chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            let email = "";
+            for (let i = 0; i < 8; i++) {
+                email += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return email + "@example.com";
+        }
+
+        function getRandomPassword() {
+            let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+            let password = "";
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        }
+
+        document.getElementById("startLogin").addEventListener("click", function(event) {
+            event.preventDefault();
+            let url = document.getElementById("loginUrl").value;
+            if (!url) {
+                alert("Vui lòng nhập URL hợp lệ.");
+                return;
+            }
+
+            for (let i = 0; i < 100; i++) {
+                let email = getRandomEmail();
+                let password = getRandomPassword();
+
+                fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: `email=${email}&password=${password}`
+                })
+                .then(response => console.log(`Lần ${i + 1}: ${email} - ${password} | Status: ${response.status}`))
+                .catch(error => console.error(`Lỗi: ${error}`));
+            }
+
+            alert("Đã gửi yêu cầu đăng nhập 100 lần!");
+        });
+    </script>
+
+</body>
+</html>
