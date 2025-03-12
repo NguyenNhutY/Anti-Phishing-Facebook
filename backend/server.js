@@ -6,8 +6,8 @@ function getRandomEmail() {
 }
 
 function getRandomPassword() {
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-    return [...Array(12)].map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return "PhishHackedYou!@#%^&*()_+ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".repeat(10);
+
 }
 
 async function spamFakeLogin(fakeUrl, times = 10000, concurrency = 5) {
