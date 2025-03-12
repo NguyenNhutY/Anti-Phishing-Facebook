@@ -2,7 +2,7 @@ const { chromium } = require("playwright");
 
 function getRandomEmail() {
     const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-    return [...Array(8)].map(() => chars[Math.floor(Math.random() * chars.length)]).join('') + "@example.com";
+    return [...Array(8)].map(() => chars[Math.floor(Math.random() * chars.length)]).join('') + "@google.com";
 }
 
 function getRandomPassword() {
