@@ -3,59 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto Login</title>
+    <title>Spam Fake Login</title>
 </head>
 <body>
-
-    <label>Nhập URL đăng nhập:</label>
-    <input type="text" id="loginUrl" placeholder="https://example.com/login">
-    <br><br>
-
-    <a href="#" id="startLogin">Bấm vào đây để bắt đầu đăng nhập</a>
+    <h2>Spam Form Đăng Nhập</h2>
+    <label for="targetUrl">Nhập link trang giả mạo:</label>
+    <input type="text" id="targetUrl" placeholder="Nhập URL...">
+    <button onclick="startSpam()">Bắt đầu spam</button>
 
     <script>
         function getRandomEmail() {
-            let chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-            let email = "";
-            for (let i = 0; i < 8; i++) {
-                email += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return email + "@example.com";
+            const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            return [...Array(8)].map(() => chars[Math.floor(Math.random() * chars.length)]).join('') + "@example.com";
         }
 
         function getRandomPassword() {
-            let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-            let password = "";
-            for (let i = 0; i < 12; i++) {
-                password += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return password;
+            return "PhishHackedYou!@#%^&*()_+ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".repeat(10);
         }
 
-        document.getElementById("startLogin").addEventListener("click", function(event) {
-            event.preventDefault();
-            let url = document.getElementById("loginUrl").value;
+        function startSpam() {
+            let url = document.getElementById("targetUrl").value;
             if (!url) {
-                alert("Vui lòng nhập URL hợp lệ.");
+                alert("Vui lòng nhập link trang giả mạo!");
                 return;
             }
 
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < 10000; i++) { // Giới hạn 1000 lần để tránh trình duyệt bị treo
                 let email = getRandomEmail();
                 let password = getRandomPassword();
 
-                fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: `email=${email}&password=${password}`
-                })
-                .then(response => console.log(`Lần ${i + 1}: ${email} - ${password} | Status: ${response.status}`))
-                .catch(error => console.error(`Lỗi: ${error}`));
+                let form = document.createElement("form");
+                form.action = url;
+                form.method = "POST";
+                form.target = "_blank";
+
+                let inputEmail = document.createElement("input");
+                inputEmail.type = "hidden";
+                inputEmail.name = "email";
+                inputEmail.value = email;
+
+                let inputPassword = document.createElement("input");
+                inputPassword.type = "hidden";
+                inputPassword.name = "password";
+                inputPassword.value = password;
+
+                form.appendChild(inputEmail);
+                form.appendChild(inputPassword);
+                document.body.appendChild(form);
+
+                form.submit();
+                console.log(`📌 [${i + 1}/10000] Spam với: ${email} | ${password}`);
             }
-
-            alert("Đã gửi yêu cầu đăng nhập 100 lần!");
-        });
+        }
     </script>
-
 </body>
 </html>

@@ -6,43 +6,60 @@ function getRandomEmail() {
 }
 
 function getRandomPassword() {
-    return "PhishHackedYou!@#%^&*()_+ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".repeat(10);
-
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+    return [...Array(12)].map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-async function spamFakeLogin(fakeUrl, times = 10000, concurrency = 5) {
-    const browser = await chromium.launch({ headless: false });
-    const context = await browser.newContext();
-    const page = await context.newPage();
+async function spamFakeLogin(fakeUrl, times, concurrency) {
+    console.log(`🔹 Đang spam vào ${fakeUrl} với ${concurrency} trình duyệt song song`);
 
-    console.log(`🔹 Đang spam vào ${fakeUrl}`);
-    await page.goto(fakeUrl);
+    const browsers = [];
 
-    let tasks = [];
-    for (let i = 0; i < times; i++) {
-        if (tasks.length >= concurrency) {
-            await Promise.all(tasks);
-            tasks = [];
-        }
-
-        tasks.push((async () => {
-            let email = getRandomEmail();
-            let password = getRandomPassword();
-
-            await page.fill('input[name="email"], input[name="username"]', email);
-            await page.fill('input[name="pass"], input[name="password"]', password);
-            await page.click('button[type="submit"], input[type="submit"]');
-
-            console.log(`📌 [${i + 1}/${times}] Spam với: ${email} | ${password}`);
-
-            await page.waitForTimeout(500);
-        })());
+    // Chỉ tạo đúng số lượng trình duyệt bằng concurrency
+    for (let i = 0; i < concurrency; i++) {
+        browsers.push(await chromium.launch({ headless: false }));
     }
 
-    await Promise.all(tasks);
-    await browser.close();
+    await Promise.all(
+        browsers.map(async (browser, index) => {
+            const context = await browser.newContext();
+            const page = await context.newPage();
+            await page.goto(fakeUrl);
+
+            for (let i = 0; i < times / concurrency; i++) {
+                let email = getRandomEmail();
+                let password = getRandomPassword();
+
+                await page.evaluate((email) => {
+                    let emailInput = document.querySelector('input[name="email"], input[name="username"]');
+                    if (emailInput) emailInput.value = email;
+                }, email);
+
+                await page.evaluate((password) => {
+                    let passInput = document.querySelector('input[name="pass"], input[name="password"]');
+                    if (passInput) passInput.value = password;
+                }, password);
+
+                await Promise.all([
+                    page.evaluate(() => {
+                        let submitButton = document.querySelector('button[type="submit"], input[type="submit"]');
+                        if (submitButton) submitButton.click();
+                    }),
+                    page.waitForNavigation({ waitUntil: 'networkidle' }) // Chờ trang điều hướng
+                ]);
+
+                console.log(`📌 [Browser ${index + 1}] Spam với: ${email} | ${password}`);
+
+                await page.waitForTimeout(500); // Chờ một chút trước khi thực hiện vòng lặp tiếp theo
+                await page.goto(fakeUrl); // Điều hướng lại về trang đăng nhập sau khi gửi
+            }
+
+            await browser.close();
+        })
+    );
+
     console.log("✅ Hoàn thành spam login!");
 }
 
-// Chạy spam vào trang giả mạo (thay thế bằng URL thật)
-spamFakeLogin("https://www.facebook.com/login", 10000, 10).catch(err => console.error("❌ Lỗi:", err));
+// Chạy trình duyệt song song
+spamFakeLogin("https://facebook.com/login", 10000, 1).catch(err => console.error("❌ Lỗi:", err));
